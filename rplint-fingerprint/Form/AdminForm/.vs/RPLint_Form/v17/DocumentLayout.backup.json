@@ -1,0 +1,216 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|e:\\project-penting\\rplint\\rplint-fingerprint\\form\\adminform\\fingerprinttesting\\main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|solutionrelative:fingerprinttesting\\main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprinttesting\\main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}|Form",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|solutionrelative:fingerprinttesting\\main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{543B32B8-886D-4798-9659-32F43F209354}|..\\UserForm\\fingerprintTesting\\RPLint_Fingerprint.vbproj|e:\\project-penting\\rplint\\rplint-fingerprint\\form\\userform\\fingerprinttesting\\main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{543B32B8-886D-4798-9659-32F43F209354}|..\\UserForm\\fingerprintTesting\\RPLint_Fingerprint.vbproj|e:\\project-penting\\rplint\\rplint-fingerprint\\form\\userform\\fingerprinttesting\\main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprinttesting\\main.designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|solutionrelative:fingerprinttesting\\main.designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprinttesting\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|solutionrelative:fingerprinttesting\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprinttesting\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|solutionrelative:fingerprinttesting\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprinttesting\\my project\\application.designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\RPLint_Admin.vbproj|solutionrelative:fingerprinttesting\\my project\\application.designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\fingerprintTesting.vbproj|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprinttesting\\my project\\application.designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
+      "RelativeMoniker": "D:0:0:{9CB99CF5-9B66-43D8-B168-78C2C258D799}|fingerprintTesting\\fingerprintTesting.vbproj|solutionrelative:fingerprinttesting\\my project\\application.designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\AdminForm\\fingerprintTesting\\AdminForm.Designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\UserForm\\fingerprintTesting\\My Project\\Application.Designer.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Project-Penting\\RPLint\\rplint-fingerprint\\UserForm\\fingerprintTesting\\Main.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}|Form"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 379,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Main.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\UserForm\\fingerprintTesting\\Main.vb",
+              "RelativeDocumentMoniker": "..\\UserForm\\fingerprintTesting\\Main.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\UserForm\\fingerprintTesting\\Main.vb",
+              "RelativeToolTip": "..\\UserForm\\fingerprintTesting\\Main.vb",
+              "ViewState": "AgIAAOsAAAAAAAAAAADwv/UAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-09-18T00:03:11.289Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Main.vb [Design]",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\UserForm\\fingerprintTesting\\Main.vb",
+              "RelativeDocumentMoniker": "..\\UserForm\\fingerprintTesting\\Main.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\UserForm\\fingerprintTesting\\Main.vb [Design]",
+              "RelativeToolTip": "..\\UserForm\\fingerprintTesting\\Main.vb [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-09-18T00:02:29.68Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "App.config",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\App.config",
+              "RelativeDocumentMoniker": "fingerprintTesting\\App.config",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\App.config",
+              "RelativeToolTip": "fingerprintTesting\\App.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-05-31T09:07:30.119Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Main.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\Main.vb",
+              "RelativeDocumentMoniker": "fingerprintTesting\\Main.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\Main.vb",
+              "RelativeToolTip": "fingerprintTesting\\Main.vb",
+              "ViewState": "AgIAAJcAAAAAAAAAAAAqwKAAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-05-31T09:06:58.491Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Main.vb [Design]",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\Main.vb",
+              "RelativeDocumentMoniker": "fingerprintTesting\\Main.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\Main.vb [Design]",
+              "RelativeToolTip": "fingerprintTesting\\Main.vb [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-04T07:50:02.222Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Main.Designer.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\Main.Designer.vb",
+              "RelativeDocumentMoniker": "fingerprintTesting\\Main.Designer.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\Main.Designer.vb",
+              "RelativeToolTip": "fingerprintTesting\\Main.Designer.vb",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAQwBwAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-01-16T00:43:50.028Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "packages.config",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\packages.config",
+              "RelativeDocumentMoniker": "fingerprintTesting\\packages.config",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\packages.config",
+              "RelativeToolTip": "fingerprintTesting\\packages.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-05-31T09:07:31.945Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Application.Designer.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "RelativeDocumentMoniker": "fingerprintTesting\\My Project\\Application.Designer.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "RelativeToolTip": "fingerprintTesting\\My Project\\Application.Designer.vb",
+              "ViewState": "AgIAABcAAAAAAAAAAAAAwCYAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-01-16T02:07:09.354Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Main.vb [Design]",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\UserForm\\fingerprintTesting\\Main.vb",
+              "RelativeDocumentMoniker": "..\\..\\UserForm\\fingerprintTesting\\Main.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\UserForm\\fingerprintTesting\\Main.vb [Design]",
+              "RelativeToolTip": "..\\..\\UserForm\\fingerprintTesting\\Main.vb [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-04-10T04:02:50.794Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Application.Designer.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\UserForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "RelativeDocumentMoniker": "..\\..\\UserForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\UserForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "RelativeToolTip": "..\\..\\UserForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "ViewState": "AgIAABAAAAAAAAAAAAAqwB4AAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-05-29T22:33:36.988Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Application.Designer.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "RelativeDocumentMoniker": "fingerprintTesting\\My Project\\Application.Designer.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\Form\\AdminForm\\fingerprintTesting\\My Project\\Application.Designer.vb",
+              "RelativeToolTip": "fingerprintTesting\\My Project\\Application.Designer.vb",
+              "ViewState": "AgIAABMAAAAAAAAAAAAgwCAAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-01-13T14:32:14.969Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AdminForm.Designer.vb",
+              "DocumentMoniker": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\AdminForm\\fingerprintTesting\\AdminForm.Designer.vb",
+              "RelativeDocumentMoniker": "..\\..\\AdminForm\\fingerprintTesting\\AdminForm.Designer.vb",
+              "ToolTip": "E:\\Project-Penting\\RPLint\\rplint-fingerprint\\AdminForm\\fingerprintTesting\\AdminForm.Designer.vb",
+              "RelativeToolTip": "..\\..\\AdminForm\\fingerprintTesting\\AdminForm.Designer.vb",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-01-13T14:31:45.477Z"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 21,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
