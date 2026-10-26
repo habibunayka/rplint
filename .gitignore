@@ -1,2 +1,24 @@
 
-rplint-tools.zip
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+~$*
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Logs, temporary files, and local environment overrides
+*.log
+*.tmp
+*.temp
+*.bak
+.env
+.env.*
+!.env.example
+
+# Large packaged copies kept outside the source projects
+/rplint-tools.zip
+/rplint-fingerprint/*.zip
+/rplint-fingerprint/*.rar

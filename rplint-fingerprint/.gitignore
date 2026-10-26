@@ -1,0 +1,26 @@
+# Visual Studio and VB.NET generated files
+**/.vs/
+**/bin/
+**/obj/
+**/packages/
+**/*.user
+**/*.suo
+**/*.pfx
+**/*.mdb
+
+# Published and compiled application output
+**/app.publish/
+**/Application Files/
+**/*.exe
+**/*.dll
+**/*.pdb
+**/*.manifest
+**/*.application
+**/*.deploy
+
+# Local archives and temporary files
+*.zip
+*.rar
+*.log
+*.tmp
+Thumbs.db
