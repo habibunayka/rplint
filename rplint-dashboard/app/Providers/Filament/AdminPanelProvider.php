@@ -2,18 +2,15 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Resources\AttendanceResource\Widgets\AttendanceWidget;
+use App\Filament\Pages\Dashboard as AdminDashboard;
 use App\Http\Middleware\IsAdmin;
-use App\Models\GenerationClass;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -25,19 +22,6 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $widgets = [
-            // Widgets\AccountWidget::class,
-            // Widgets\FilamentInfoWidget::class,
-        ];
-
-        $classes = GenerationClass::where('class_name', '!=','Graduate')->get();
-
-        foreach ($classes as $class) {
-            $widgets[] = AttendanceWidget::make([
-                'classId' => $class->id,
-            ]);
-        }
-
         return $panel
             ->default()
             ->id('admin')
@@ -49,10 +33,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                AdminDashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets($widgets)
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

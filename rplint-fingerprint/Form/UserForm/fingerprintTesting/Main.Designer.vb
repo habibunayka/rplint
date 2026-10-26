@@ -24,8 +24,6 @@ Partial Class Main
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Main))
-        Me.Label1 = New System.Windows.Forms.Label()
-        Me.fullNameTxt = New System.Windows.Forms.TextBox()
         Me.FingerPrintControll1 = New fingerPrintControl.fingerPrintControll()
         Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.Label4 = New System.Windows.Forms.Label()
@@ -35,25 +33,6 @@ Partial Class Main
         Me.todayLabel = New System.Windows.Forms.Label()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
-        '
-        'Label1
-        '
-        Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(15, 276)
-        Me.Label1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(103, 16)
-        Me.Label1.TabIndex = 1
-        Me.Label1.Text = "Nama Lengkap:"
-        '
-        'fullNameTxt
-        '
-        Me.fullNameTxt.Location = New System.Drawing.Point(19, 296)
-        Me.fullNameTxt.Margin = New System.Windows.Forms.Padding(4)
-        Me.fullNameTxt.Name = "fullNameTxt"
-        Me.fullNameTxt.ReadOnly = True
-        Me.fullNameTxt.Size = New System.Drawing.Size(515, 22)
-        Me.fullNameTxt.TabIndex = 2
         '
         'FingerPrintControll1
         '
@@ -106,7 +85,7 @@ Partial Class Main
         '
         Me.timeDisplay.AutoSize = True
         Me.timeDisplay.Font = New System.Drawing.Font("Microsoft Sans Serif", 25.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.timeDisplay.Location = New System.Drawing.Point(157, 178)
+        Me.timeDisplay.Location = New System.Drawing.Point(155, 201)
         Me.timeDisplay.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.timeDisplay.Name = "timeDisplay"
         Me.timeDisplay.Size = New System.Drawing.Size(198, 51)
@@ -117,7 +96,7 @@ Partial Class Main
         '
         Me.todayLabel.AutoSize = True
         Me.todayLabel.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.2!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.todayLabel.Location = New System.Drawing.Point(160, 136)
+        Me.todayLabel.Location = New System.Drawing.Point(160, 167)
         Me.todayLabel.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.todayLabel.Name = "todayLabel"
         Me.todayLabel.Size = New System.Drawing.Size(45, 20)
@@ -134,8 +113,6 @@ Partial Class Main
         Me.Controls.Add(Me.timeDisplay)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.DataGridView1)
-        Me.Controls.Add(Me.fullNameTxt)
-        Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.FingerPrintControll1)
         Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "Main"
@@ -146,8 +123,6 @@ Partial Class Main
 
     End Sub
     Friend WithEvents FingerPrintControll1 As fingerPrintControl.fingerPrintControll
-    Friend WithEvents Label1 As System.Windows.Forms.Label
-    Friend WithEvents fullNameTxt As System.Windows.Forms.TextBox
     Friend WithEvents DataGridView1 As DataGridView
     Friend WithEvents Label4 As Label
     Friend WithEvents Label3 As Label

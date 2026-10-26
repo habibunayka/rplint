@@ -16,7 +16,7 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::check() && Auth::user()->role !== 'admin') {
+        if (Auth::check() && ! in_array(Auth::user()->role, ['admin', 'homeroom_teacher'])) {
             Auth::logout();
             return redirect('/login')->with('error', 'You are not authorized to access this page.');
         }

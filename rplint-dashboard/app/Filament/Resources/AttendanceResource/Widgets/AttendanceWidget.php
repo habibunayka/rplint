@@ -5,8 +5,8 @@ namespace App\Filament\Resources\AttendanceResource\Widgets;
 use App\Models\Attendance;
 use App\Models\GenerationClass;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class AttendanceWidget extends ChartWidget
 {
@@ -37,6 +37,19 @@ class AttendanceWidget extends ChartWidget
             ];
         }
 
+        $user = Auth::user();
+
+        if ($user && $user->role === 'homeroom_teacher') {
+            $allowedClassIds = GenerationClass::where('homeroom_teacher_id', $user->id)->pluck('id');
+
+            if ($allowedClassIds->isEmpty() || ! $allowedClassIds->contains($this->classId)) {
+                return [
+                    'labels' => [],
+                    'datasets' => [],
+                ];
+            }
+        }
+
         $class = GenerationClass::find($this->classId);
 
         if (!$class) {
@@ -50,25 +63,25 @@ class AttendanceWidget extends ChartWidget
 
         $totalStudents = DB::table('students')->where('generation_class_id', $class->id)->count();
 
-        $ontime = Attendance::whereDate('created_at', $today)
+        $ontime = Attendance::whereDate('check_in_time', $today)
             ->where('status', 'ontime')
             ->whereHas('student', function ($query) use ($class) {
                 $query->where('generation_class_id', $class->id);
             })->count();
 
-        $late = Attendance::whereDate('created_at', $today)
+        $late = Attendance::whereDate('check_in_time', $today)
             ->where('status', 'late')
             ->whereHas('student', function ($query) use ($class) {
                 $query->where('generation_class_id', $class->id);
             })->count();
 
-        $permit = Attendance::whereDate('created_at', $today)
+        $permit = Attendance::whereDate('check_in_time', $today)
             ->where('status', 'permit')
             ->whereHas('student', function ($query) use ($class) {
                 $query->where('generation_class_id', $class->id);
             })->count();
 
-        $sick = Attendance::whereDate('created_at', $today)
+        $sick = Attendance::whereDate('check_in_time', $today)
             ->where('status', 'sick')
             ->whereHas('student', function ($query) use ($class) {
                 $query->where('generation_class_id', $class->id);

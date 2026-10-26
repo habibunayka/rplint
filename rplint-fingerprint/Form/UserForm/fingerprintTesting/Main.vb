@@ -8,7 +8,6 @@ Imports System.Text
 Imports System.Threading
 Imports System.Threading.Tasks
 Imports System.Timers
-Imports System.Windows.Forms.VisualStyles.VisualStyleElement
 
 Public Class Main
     Dim prevXml As String = ""
@@ -18,53 +17,60 @@ Public Class Main
 
     Dim currentTime As DateTime
     Dim localFingerprintData As JArray = Nothing
+
+    Dim authToken As String = "cVqzJR8VZtTFZmF3Ko4WPevhdTrVbwMAcMSpdQABI3"
+
+    Dim client As New HttpClient()
+
     Delegate Sub SafeCallDelegate(ByVal text As String)
 
     Private Async Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         FingerPrintControll1.onLoad()
+
+        client.DefaultRequestHeaders.Clear()
+        client.DefaultRequestHeaders.Add("Authorization", "Bearer " & authToken)
+
         Await LoadFingerprintData()
         LoadDataGridView()
+
         timer.Interval = 1000
         AddHandler timer.Elapsed, AddressOf Timer_Elapsed
         timer.Start()
+
         currentTime = DateTime.Now
         UpdateDateLabel()
     End Sub
 
     Private Async Function LoadFingerprintData() As Task
         Try
-            Dim client As New HttpClient()
-            Dim response As HttpResponseMessage = Await client.GetAsync("http://localhost:8000/api/students/fingerprint")
+            Dim response As HttpResponseMessage = Await client.GetAsync("https://rplint.cibionerpl.id/api/students/fingerprint")
             Dim responseBody As String = Await response.Content.ReadAsStringAsync()
 
             If Not response.IsSuccessStatusCode Then
-                MsgBox("Gagal ambil data fingerprint dari server pas load awal: " & responseBody)
+                MsgBox("Gagal ambil data fingerprint: " & responseBody)
                 Return
             End If
 
             localFingerprintData = JArray.Parse(responseBody)
         Catch ex As Exception
-            MsgBox("Error ambil fingerprint pas load awal: " & ex.Message)
+            MsgBox("Error ambil fingerprint: " & ex.Message)
         End Try
     End Function
 
     Private Sub Timer_Elapsed(sender As Object, e As ElapsedEventArgs)
         currentTime = currentTime.AddSeconds(1)
-        If Me.InvokeRequired Then
-            Me.Invoke(New Action(Of String)(AddressOf UpdateTimeDisplay), currentTime.ToString("HH:mm:ss"))
-        Else
-            UpdateTimeDisplay(currentTime.ToString("HH:mm:ss"))
-        End If
 
         If Me.InvokeRequired Then
-            Me.Invoke(New Action(AddressOf UpdateDateLabel))
+            Me.Invoke(Sub() UpdateTimeDisplay(currentTime.ToString("HH:mm:ss")))
+            Me.Invoke(Sub() UpdateDateLabel())
         Else
+            UpdateTimeDisplay(currentTime.ToString("HH:mm:ss"))
             UpdateDateLabel()
         End If
     End Sub
 
     Private Sub UpdateDateLabel()
-        todayLabel.Text = currentTime.ToString("dddd, dd MMMM yyyy", New System.Globalization.CultureInfo("id-ID"))
+        todayLabel.Text = currentTime.ToString("dddd, dd MMMM yyyy", New Globalization.CultureInfo("id-ID"))
     End Sub
 
     Private Sub UpdateTimeDisplay(time As String)
@@ -73,12 +79,11 @@ Public Class Main
 
     Private Async Sub LoadDataGridView()
         Try
-            Dim client As New HttpClient()
-            Dim response As HttpResponseMessage = Await client.GetAsync("http://localhost:8000/api/students/attendances")
+            Dim response As HttpResponseMessage = Await client.GetAsync("https://rplint.cibionerpl.id/api/students/attendances")
             Dim responseBody As String = Await response.Content.ReadAsStringAsync()
 
             If Not response.IsSuccessStatusCode Then
-                MsgBox("Gagal ambil data dari server: " & responseBody)
+                MsgBox("Gagal ambil data tabel: " & responseBody)
                 Return
             End If
 
@@ -104,7 +109,7 @@ Public Class Main
             DataGridView1.DataSource = table
 
         Catch ex As Exception
-            MsgBox("Error: " & ex.Message)
+            MsgBox("Error load tabel: " & ex.Message)
         End Try
     End Sub
 
@@ -119,60 +124,9 @@ Public Class Main
             Dim player As New SoundPlayer(filePath)
             player.Play()
         Catch ex As Exception
-            MsgBox("Gagal memutar suara: " & ex.Message)
+            MsgBox("Gagal memutar audio: " & ex.Message)
         End Try
     End Sub
-
-
-    Public Class AutoCloseMessageBox
-        Private Shared timeout As Integer
-        Private Shared msgBox As Form
-
-        Public Shared Sub Show(message As String, title As String, timeoutMs As Integer)
-            timeout = timeoutMs
-            msgBox = New Form() With {
-                .Text = title,
-                .Size = New Size(300, 150),
-                .StartPosition = FormStartPosition.CenterScreen,
-                .FormBorderStyle = FormBorderStyle.FixedDialog,
-                .ControlBox = False,
-                .ShowInTaskbar = False,
-                .TopMost = True
-            }
-
-            Dim lblMessage As New Label() With {
-                .Text = message,
-                .Dock = DockStyle.Fill,
-                .TextAlign = ContentAlignment.MiddleCenter,
-                .Font = New Font("Segoe UI", 12, FontStyle.Regular)
-            }
-
-            msgBox.Controls.Add(lblMessage)
-
-            Dim t As New Thread(Sub()
-                                    Thread.Sleep(timeout)
-                                    If msgBox.InvokeRequired Then
-                                        msgBox.Invoke(Sub()
-                                                          If msgBox.Visible Then msgBox.Close()
-                                                      End Sub)
-                                    Else
-                                        If msgBox.Visible Then msgBox.Close()
-                                    End If
-                                End Sub)
-
-            t.Start()
-
-            If Application.OpenForms.Count > 0 Then
-                Dim parentForm As Form = Application.OpenForms(0)
-                parentForm.Invoke(Sub()
-                                      msgBox.ShowDialog(parentForm)
-                                  End Sub)
-            Else
-                msgBox.ShowDialog()
-            End If
-
-        End Sub
-    End Class
 
     Private Async Sub ProcessAttendance(ByVal fpXml As String)
         Try
@@ -181,13 +135,15 @@ Public Class Main
 
             If localFingerprintData Is Nothing OrElse localFingerprintData.Count = 0 Then
                 PlaySound("Resources/error.wav")
-                AutoCloseMessageBox.Show("Data fingerprint lokal kosong, ulangi load data!", "Notification", 2000)
+                AutoCloseMessageBox.Display("Data fingerprint kosong.", "Notification", 2000)
                 Return
             End If
 
             For Each student As JObject In localFingerprintData
+
                 Dim id As Integer = student("id")
                 Dim fullName As String = student("full_name")
+
                 Dim templates As New List(Of String) From {
                     student("fingerprint_template1").ToString(),
                     student("fingerprint_template2").ToString(),
@@ -195,7 +151,7 @@ Public Class Main
                 }
 
                 For Each template As String In templates
-                    If Not String.IsNullOrWhiteSpace(template) AndAlso Not String.IsNullOrWhiteSpace(fpXml) Then
+                    If Not String.IsNullOrWhiteSpace(template) Then
                         Try
                             If FingerPrintControll1.compareFingerPrint(template, fpXml) Then
                                 matchedStudentId = id
@@ -215,7 +171,7 @@ Public Class Main
 
             If matchedStudentId = 0 Then
                 PlaySound("Resources/error.wav")
-                AutoCloseMessageBox.Show("Fingerprint tidak ada di Database", "Notification", 2000)
+                AutoCloseMessageBox.Display("Sidik jari tidak dikenal.", "Notification", 2000)
                 Return
             End If
 
@@ -224,44 +180,89 @@ Public Class Main
                 .scanned_at = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             }
 
-            Dim client As New HttpClient()
             Dim postContent = New StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json")
-            Dim postResponse As HttpResponseMessage = Await client.PostAsync("http://localhost:8000/api/students/fingerprint", postContent)
+            Dim postResponse As HttpResponseMessage = Await client.PostAsync("https://rplint.cibionerpl.id/api/students/fingerprint", postContent)
+
             Dim postBody As String = Await postResponse.Content.ReadAsStringAsync()
 
             If postResponse.IsSuccessStatusCode Then
                 PlaySound("Resources/success.wav")
-                AutoCloseMessageBox.Show("Absensi berhasil, " & matchedFullName, "Notification", 2000)
+                AutoCloseMessageBox.Display("Absen berhasil: " & matchedFullName, "Notification", 2000)
             Else
                 PlaySound("Resources/error.wav")
-                Dim errorMsg As String = JObject.Parse(postBody)("message").ToString()
-                AutoCloseMessageBox.Show("Gagal absen: " & errorMsg, "Notification", 2000)
+
+                Dim errObj As JObject = JObject.Parse(postBody)
+                Dim errMsg As String = errObj("message").ToString()
+
+                AutoCloseMessageBox.Display("Gagal absen: " & errMsg, "Notification", 2000)
             End If
 
         Catch ex As Exception
             PlaySound("Resources/error.wav")
-            AutoCloseMessageBox.Show("Error bang: " & ex.Message, "Notification", 2000)
+            AutoCloseMessageBox.Display("Error bre: " & ex.Message, "Notification", 2000)
         Finally
             If Me.InvokeRequired Then
-                Me.Invoke(New Action(AddressOf LoadDataGridView))
+                Me.Invoke(Sub() LoadDataGridView())
             Else
                 LoadDataGridView()
             End If
         End Try
     End Sub
 
-    Private Sub WriteTextSafe(ByVal text As String)
-        If Me.InvokeRequired Then
-            Me.Invoke(New Action(Of String)(AddressOf WriteTextSafe), text)
-        Else
-            fullNameTxt.Text = text
-        End If
-    End Sub
+    Public Class AutoCloseMessageBox
+        Inherits Form
 
-    Private Sub SetText()
-        WriteTextSafe(fullname)
-    End Sub
+        Private closeTimer As New System.Windows.Forms.Timer()
 
-    Private Sub timeDisplay_Click(sender As Object, e As EventArgs) Handles timeDisplay.Click, todayLabel.Click
-    End Sub
+        Private Sub New(message As String, title As String, timeoutMs As Integer)
+            Me.Text = title
+            Me.Size = New Size(300, 150)
+            Me.StartPosition = FormStartPosition.CenterScreen
+            Me.FormBorderStyle = FormBorderStyle.FixedDialog
+            Me.ControlBox = False
+            Me.ShowIcon = False
+            Me.ShowInTaskbar = False
+            Me.TopMost = True
+
+            Dim lbl As New Label() With {
+                .Text = message,
+                .Dock = DockStyle.Fill,
+                .TextAlign = ContentAlignment.MiddleCenter,
+                .Font = New Font("Segoe UI", 12, FontStyle.Regular)
+            }
+
+            Me.Controls.Add(lbl)
+
+            closeTimer.Interval = timeoutMs
+            AddHandler closeTimer.Tick,
+                Sub()
+                    closeTimer.Stop()
+                    Me.Close()
+                    Me.Dispose()
+                End Sub
+        End Sub
+
+        Public Shared Sub Display(message As String, title As String, timeoutMs As Integer)
+            Dim showAction As Action =
+                Sub()
+                    Dim box As New AutoCloseMessageBox(message, title, timeoutMs)
+                    box.Show()
+                    box.TopMost = True
+                    box.BringToFront()
+                    box.Activate()
+                    box.closeTimer.Start()
+                End Sub
+
+            If Application.OpenForms.Count > 0 Then
+                Dim mainForm = Application.OpenForms(0)
+                If mainForm.InvokeRequired Then
+                    mainForm.Invoke(showAction)
+                Else
+                    showAction()
+                End If
+            Else
+                showAction()
+            End If
+        End Sub
+    End Class
 End Class

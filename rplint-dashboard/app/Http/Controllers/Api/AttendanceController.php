@@ -8,7 +8,7 @@ use App\Models\Student;
 use App\Models\Attendance;
 use Carbon\Carbon;
 
-class AttendanceController
+class AttendanceController extends Controller
 {
     public function index()
     {
@@ -102,7 +102,6 @@ class AttendanceController
 
             $attendance->update([
                 'check_out_time' => $now,
-                'status' => 'checkout',
             ]);
 
             return response()->json([

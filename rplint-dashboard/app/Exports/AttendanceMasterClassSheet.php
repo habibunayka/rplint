@@ -6,13 +6,16 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use App\Models\Attendance;
 use App\Models\Student;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, WithStyles
+class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, WithStyles, WithColumnFormatting
 {
     protected $class;
     protected $month;
@@ -55,6 +58,14 @@ class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, 
             $headingsRow2[] = 'Absent';
         }
 
+        $headingsRow1[] = 'Total';
+        $headingsRow1[] = '';
+        $headingsRow1[] = '';
+
+        $headingsRow2[] = 'Hadir';
+        $headingsRow2[] = 'Izin';
+        $headingsRow2[] = 'Sakit';
+
         return [$headingsRow1, $headingsRow2];
     }
 
@@ -84,6 +95,10 @@ class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, 
                 "'" . $student->nisn,
             ];
 
+            $hadirTotal = 0;
+            $izinTotal = 0;
+            $sakitTotal = 0;
+
             for ($m = 1; $m <= 12; $m++) {
                 $monthCarbon = Carbon::create($tahunAcuan, $m, 1);
                 $daysInMonth = $monthCarbon->daysInMonth;
@@ -97,10 +112,15 @@ class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, 
                     if ($attendances->has($key)) {
                         $attendanceGroup = $attendances->get($key);
                         $dailyStatus = $attendanceGroup->first()->status;
-                        if ($dailyStatus === 'permit' || $dailyStatus === 'sick') {
+                        if ($dailyStatus === 'permit') {
+                            $izin++;
+                            $izinTotal++;
+                        } else if ($dailyStatus === 'sick') {
+                            $sakitTotal++;
                             $izin++;
                         } else if ($dailyStatus === 'ontime' || $dailyStatus === 'late') {
                             $hadir++;
+                            $hadirTotal++;
                         } else if ($dailyStatus === 'absent') {
                             $absent++;
                         }
@@ -110,6 +130,10 @@ class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, 
                 $row[] = $izin === 0 ? '-' : $izin;
                 $row[] = $absent === 0 ? '-' : $absent;
             }
+
+            $row[] = $hadirTotal === 0 ? '-' : $hadirTotal;
+            $row[] = $izinTotal === 0 ? '-' : $izinTotal;
+            $row[] = $sakitTotal === 0 ? '-' : $sakitTotal;
 
             $data[] = $row;
         }
@@ -124,11 +148,17 @@ class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, 
 
     public function styles($sheet)
     {
-        $sheet->getStyle('A1:AN1')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('A2:AN2')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('A1:AN1')->getFill()->setFillType(Fill::FILL_SOLID)
+        $monthCount = 12;
+        $staticColumns = 4;
+        $columnsPerMonth = 3;
+        $totalColumns = $staticColumns + ($monthCount * $columnsPerMonth) + 3;
+        $lastColumn = Coordinate::stringFromColumnIndex($totalColumns);
+
+        $sheet->getStyle("A1:{$lastColumn}1")->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle("A2:{$lastColumn}2")->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle("A1:{$lastColumn}1")->getFill()->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB('FFCC00');
-        $sheet->getStyle('A2:AN2')->getFill()->setFillType(Fill::FILL_SOLID)
+        $sheet->getStyle("A2:{$lastColumn}2")->getFill()->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB('FFCC00');
 
         $sheet->mergeCells('A1:A2');
@@ -136,24 +166,42 @@ class AttendanceMasterClassSheet implements FromArray, WithHeadings, WithTitle, 
         $sheet->mergeCells('C1:C2');
         $sheet->mergeCells('D1:D2');
 
-        for ($m = 1; $m <= 12; $m++) {
+        for ($m = 1; $m <= $monthCount; $m++) {
             $startCol = 5 + (($m - 1) * 3);
             $endCol = $startCol + 2;
             $sheet->mergeCellsByColumnAndRow($startCol, 1, $endCol, 1);
         }
 
+        $totalStartCol = 5 + ($monthCount * $columnsPerMonth);
+        $totalEndCol = $totalStartCol + 2;
+        $sheet->mergeCellsByColumnAndRow($totalStartCol, 1, $totalEndCol, 1);
+
         $dataCount = count($this->array()) + 2;
-        $sheet->getStyle("A1:AN{$dataCount}")
+        $sheet->getStyle("A1:{$lastColumn}{$dataCount}")
             ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet->getStyle("A1:AN{$dataCount}")
+        $sheet->getStyle("A1:{$lastColumn}{$dataCount}")
             ->getAlignment()->setHorizontal('center')->setVertical('center');
+
+        $sheet->getStyle("A1:{$lastColumn}2")
+            ->getAlignment()
+            ->setHorizontal('center')
+            ->setVertical('center');
 
         $sheet->getColumnDimension('B')->setWidth(25);
         $sheet->getColumnDimension('C')->setWidth(15);
         $sheet->getColumnDimension('D')->setWidth(15);
 
-        for ($col = 'E'; $col <= 'AN'; $col++) {
-            $sheet->getColumnDimension($col)->setWidth(15);
+        for ($colIndex = 5; $colIndex <= $totalColumns; $colIndex++) {
+            $column = Coordinate::stringFromColumnIndex($colIndex);
+            $sheet->getColumnDimension($column)->setWidth(15);
         }
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'C' => NumberFormat::FORMAT_TEXT,
+            'D' => NumberFormat::FORMAT_TEXT,
+        ];
     }
 }

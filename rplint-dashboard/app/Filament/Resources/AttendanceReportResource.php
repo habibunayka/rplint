@@ -9,6 +9,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceReportResource extends Resource
 {
@@ -54,25 +55,28 @@ class AttendanceReportResource extends Resource
             ->actions([
                 Action::make('download')
                     ->label('Download Excel')
-                    ->action(function ($record) {
-                        $fileName = $record->file_name;
-                        $filePath = 'attendances/' . $fileName;
+                    ->action(function ($record, Action $action) {
+                        $filePath = $record->file_path ?? ('attendances/' . $record->file_name);
 
-                        if (Storage::exists($filePath)) {
-                            return response()->download(Storage::path($filePath), $fileName);
+                        if (! Storage::disk('local')->exists($filePath)) {
+                            $action->failure('File tidak tersedia untuk diunduh.');
+                            return null;
                         }
 
-                        return $this->fail('File tidak tersedia untuk diunduh.');
+                        return response()->download(
+                            Storage::disk('local')->path($filePath),
+                            $record->file_name
+                        );
                     })
                     ->color('primary'),
                 Action::make('delete')
                     ->label('Hapus')
                     ->requiresConfirmation()
                     ->action(function ($record) {
-                        $filePath = 'attendances/' . $record->file_name;
+                        $filePath = $record->file_path ?? ('attendances/' . $record->file_name);
 
-                        if (Storage::exists($filePath)) {
-                            Storage::delete($filePath);
+                        if (Storage::disk('local')->exists($filePath)) {
+                            Storage::disk('local')->delete($filePath);
                         }
 
                         $record->delete();
@@ -87,5 +91,19 @@ class AttendanceReportResource extends Resource
         return [
             'index' => Pages\ManageAttendanceReports::route('/'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if (app()->runningInConsole()) {
+            return true;
+        }
+
+        return Auth::user()?->role === 'admin';
     }
 }

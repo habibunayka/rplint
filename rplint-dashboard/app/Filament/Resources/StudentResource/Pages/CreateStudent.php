@@ -6,7 +6,6 @@ use App\Filament\Resources\StudentResource;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Facades\Hash;
 
 class CreateStudent extends CreateRecord
 {
@@ -20,11 +19,22 @@ class CreateStudent extends CreateRecord
         $user = User::create([
             'name' => $userData['name'] ?? '-',
             'email' => $userData['email'] ?? uniqid() . '@example.com',
-            'password' => Hash::make($userData['password'] ?? 'password123'),
+            'password' => $userData['password'] ?? 'password123',
+            'role' => 'student',
         ]);
 
         $data['user_id'] = $user->id;
 
         return $data;
+    }
+
+    protected function authorizeAccess(): void
+    {
+        parent::authorizeAccess();
+
+        abort_unless(
+            auth()->check() && auth()->user()->role === 'admin',
+            403
+        );
     }
 }

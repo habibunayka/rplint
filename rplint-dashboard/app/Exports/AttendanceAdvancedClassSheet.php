@@ -6,13 +6,24 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Models\Attendance;
 use App\Models\Student;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class AttendanceAdvancedClassSheet implements FromArray, WithHeadings, WithTitle, WithStyles
+class AttendanceAdvancedClassSheet implements
+    FromArray,
+    WithHeadings,
+    WithTitle,
+    WithStyles,
+    WithColumnFormatting,
+    WithCustomStartCell
 {
     protected $class;
     protected $month;
@@ -23,23 +34,40 @@ class AttendanceAdvancedClassSheet implements FromArray, WithHeadings, WithTitle
         $this->month = $month;
     }
 
+    public function startCell(): string
+    {
+        return 'A1';
+    }
+
     public function headings(): array
     {
-        $headings = ['No', 'Nama Lengkap', 'NIS', 'NISN'];
         $daysInMonth = Carbon::parse($this->month)->daysInMonth;
 
+
+        $row1 = ['No', 'Nama Lengkap', 'NIS', 'NISN'];
+
         for ($i = 1; $i <= $daysInMonth; $i++) {
-            $headings[] = "Tanggal {$i}";
-            $headings[] = "Tanggal {$i}";
+            $row1[] = "Tanggal {$i}";
+            $row1[] = "";
         }
 
-        $checkInOutHeaders = [];
-        for ($i = 1; $i <= $daysInMonth + 2; $i++) {
-            $checkInOutHeaders[] = "Check In";
-            $checkInOutHeaders[] = "Check Out";
+        $row1[] = "Total";
+        $row1[] = "";
+        $row1[] = "";
+
+
+        $row2 = ["", "", "", ""];
+
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $row2[] = "Check In";
+            $row2[] = "Check Out";
         }
 
-        return [$headings, $checkInOutHeaders];
+        $row2[] = "Hadir";
+        $row2[] = "Izin";
+        $row2[] = "Sakit";
+
+        return [$row1, $row2];
     }
 
     public function array(): array
@@ -69,18 +97,55 @@ class AttendanceAdvancedClassSheet implements FromArray, WithHeadings, WithTitle
                 "'" . $student->nisn,
             ];
 
+            $hadirCount = 0;
+            $sakitCount = 0;
+            $izinCount = 0;
 
             for ($day = 1; $day <= $daysInMonth; $day++) {
                 $date = $month->copy()->day($day)->toDateString();
                 $key = $student->id . '-' . $date;
 
                 $attendance = $attendances->get($key);
-                $checkIn = $attendance ? Carbon::parse($attendance->first()->check_in_time)->format('H:i:s') : '-';
-                $checkOut = $attendance ? Carbon::parse($attendance->last()->check_out_time)->format('H:i:s') : '-';
+                $dailyStatus = $attendance ? $attendance->first()->status : null;
+
+                $checkIn = '-';
+                $checkOut = '-';
+
+                if ($attendance) {
+                    $firstRecord = $attendance->first();
+                    $lastRecord = $attendance->last();
+
+                    $checkInTime = $firstRecord->check_in_time;
+                    $checkOutTime = $lastRecord->check_out_time;
+
+                    $checkIn = $checkInTime ? Carbon::parse($checkInTime)->format('H:i:s') : '-';
+                    $checkOut = $checkOutTime ? Carbon::parse($checkOutTime)->format('H:i:s') : '-';
+                }
+
+                switch ($dailyStatus) {
+                    case 'ontime':
+                    case 'late':
+                        $hadirCount++;
+                        break;
+                    case 'sick':
+                        $sakitCount++;
+                        break;
+                    case 'permit':
+                        $izinCount++;
+                        break;
+                    default:
+
+                        break;
+                }
 
                 $row[] = $checkIn;
                 $row[] = $checkOut;
             }
+
+
+            $row[] = $hadirCount;
+            $row[] = $izinCount;
+            $row[] = $sakitCount;
 
             $data[] = $row;
         }
@@ -88,49 +153,68 @@ class AttendanceAdvancedClassSheet implements FromArray, WithHeadings, WithTitle
         return $data;
     }
 
+
     public function title(): string
     {
         return $this->class->class_name;
     }
 
-    public function styles($sheet)
+    public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:BN1')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('A2:BN2')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('A1:BN1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFCC00');
-        $sheet->getStyle('A2:BN2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFCC00');
-
-        $sheet->getStyle('A2:BN2')->getFont()->setBold(true)->setSize(10);
-
-        $sheet->mergeCells('A1:A2');
-        $sheet->mergeCells('B1:B2');
-        $sheet->mergeCells('C1:C2');
-        $sheet->mergeCells('D1:D2');
-
         $daysInMonth = Carbon::parse($this->month)->daysInMonth;
+
+        $totalStart = ($daysInMonth * 2) + 5;
+        $totalEnd = $totalStart + 2;
+
+        $endColumn = Coordinate::stringFromColumnIndex($totalEnd);
+
+
+        $sheet->getStyle("A1:{$endColumn}2")->getFont()->setBold(true);
+        $sheet->getStyle("A1:{$endColumn}2")->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('FFCC00');
+
+
+        foreach (['A', 'B', 'C', 'D'] as $col) {
+            $sheet->mergeCells("{$col}1:{$col}2");
+        }
+
+
+        $colIndex = 5;
         for ($i = 1; $i <= $daysInMonth; $i++) {
-            $sheet->mergeCellsByColumnAndRow($i * 2 + 3, 1, $i * 2 + 4, 1);
+            $col1 = Coordinate::stringFromColumnIndex($colIndex);
+            $col2 = Coordinate::stringFromColumnIndex($colIndex + 1);
+            $sheet->mergeCells("{$col1}1:{$col2}1");
+            $colIndex += 2;
         }
 
-        $sheet->getStyle('C3:C' . (count($this->array()) + 2))
-            ->getNumberFormat()
-            ->setFormatCode('@');
 
-        $sheet->getStyle('D3:D' . (count($this->array()) + 2))
-            ->getNumberFormat()
-            ->setFormatCode('@');
+        $sheet->mergeCells(
+            Coordinate::stringFromColumnIndex($totalStart)
+                . "1:" .
+                Coordinate::stringFromColumnIndex($totalEnd)
+                . "1"
+        );
+
+        $sheet->getStyle("A1:{$endColumn}2")
+            ->getAlignment()
+            ->setHorizontal('center')
+            ->setVertical('center');
 
 
-        $sheet->getStyle('A1:BN41')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A1:{$endColumn}500")
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getStyle('A1:BN41')->getAlignment()->setHorizontal('center')->setVertical('center');
+        return [];
+    }
 
-        $sheet->getColumnDimension('B')->setWidth(25);
-        $sheet->getColumnDimension('C')->setWidth(15);
-        $sheet->getColumnDimension('D')->setWidth(15);
-
-        for ($col = 'E'; $col <= 'BN'; $col++) {
-            $sheet->getColumnDimension($col)->setWidth(35);
-        }
+    public function columnFormats(): array
+    {
+        return [
+            'C' => NumberFormat::FORMAT_TEXT,
+            'D' => NumberFormat::FORMAT_TEXT,
+        ];
     }
 }

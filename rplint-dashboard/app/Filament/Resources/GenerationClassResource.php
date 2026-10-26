@@ -3,15 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GenerationClassResource\Pages;
-use App\Filament\Resources\GenerationClassResource\RelationManagers;
 use App\Models\GenerationClass;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class GenerationClassResource extends Resource
 {
@@ -44,13 +45,21 @@ class GenerationClassResource extends Resource
                     ])
                     ->required()
                     ->label('Nama Kelas'),
-                Forms\Components\TextInput::make('class_teacher')
-                    ->label('Wali Kelas'),
+                Forms\Components\Select::make('homeroom_teacher_id')
+                    ->label('Wali Kelas')
+                    ->searchable()
+                    ->options(fn(?GenerationClass $record) => static::getAvailableHomeroomTeachers($record))
+                    ->hint('Pilih wali kelas yang telah terdaftar')
+                    ->default(null)
+                    ->preload(),
             ]);
     }
 
     public static function table(Table $table): Table
     {
+        $isAdmin = Auth::check() && Auth::user()->role === 'admin';
+        $isHomeroom = Auth::check() && Auth::user()->role === 'homeroom_teacher';
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('generation_name')
@@ -59,23 +68,32 @@ class GenerationClassResource extends Resource
                 Tables\Columns\TextColumn::make('class_name')
                     ->label('Nama Kelas')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('class_teacher')
+                Tables\Columns\TextColumn::make('homeroomTeacher.name')
                     ->label('Wali Kelas')
+                    ->formatStateUsing(fn($state, GenerationClass $record) => $state ?? $record->class_teacher ?? '-')
                     ->searchable(),
-                
+
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('id')
+                    ->label('Kelas')
+                    ->options(fn() => static::getClassOptions()),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                ...array_filter([
+                    $isAdmin ? Tables\Actions\EditAction::make() : null,
+                    $isAdmin ? Tables\Actions\DeleteAction::make() : null,
                 ]),
-            ]);
+            ])
+            ->bulkActions(
+                $isAdmin
+                    ? [
+                        Tables\Actions\BulkActionGroup::make([
+                            Tables\Actions\DeleteBulkAction::make(),
+                        ]),
+                    ]
+                    : []
+            );
     }
 
     public static function getPages(): array
@@ -83,5 +101,85 @@ class GenerationClassResource extends Resource
         return [
             'index' => Pages\ManageGenerationClasses::route('/'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && in_array(Auth::user()->role, ['admin', 'homeroom_teacher']);
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $query->where('homeroom_teacher_id', Auth::id());
+        }
+
+        return $query;
+    }
+
+    protected static function getClassOptions(): array
+    {
+        return static::getScopedClasses()
+            ->where('class_name', '!=', 'Graduate')
+            ->pluck('class_name', 'id')
+            ->toArray();
+    }
+
+    protected static function getScopedClasses()
+    {
+        $query = GenerationClass::query();
+
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $query->where('homeroom_teacher_id', Auth::id());
+        }
+
+        return $query;
+    }
+
+    protected static function getAvailableHomeroomTeachers(?GenerationClass $record = null): array
+    {
+        return User::query()
+            ->where('role', 'homeroom_teacher')
+            ->where(function ($query) use ($record) {
+                $query->whereDoesntHave('homeroomClasses');
+
+                if ($record?->homeroom_teacher_id) {
+                    $query->orWhere('id', $record->homeroom_teacher_id);
+                }
+            })
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if (app()->runningInConsole()) {
+            return true;
+        }
+
+        return Auth::user() && in_array(Auth::user()->role, ['admin', 'homeroom_teacher']);
     }
 }

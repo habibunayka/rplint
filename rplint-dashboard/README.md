@@ -1,66 +1,58 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+RPLint Dashboard
+================
+Filament-powered attendance dashboard for RPLint. The app manages students, classes, homeroom teachers, schedules, special days, attendance submissions (including fingerprint events), and monthly/yearly Excel exports.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Features
+--------
+- Role-aware Filament admin at `/admin` for admins and homeroom teachers.
+- Attendance tracking with check-in/out, auto-absent job (`attendance:auto-check-in`), and export jobs (`attendance:export`, `attendance:export-master`).
+- Special day rules (holiday/permit/sick/custom) applied per student, class, or globally.
+- Student, class, schedule, and homeroom teacher management with photo uploads.
+- Mobile/API endpoints for login, attendance feed, and fingerprint devices (Bearer `APP_TOKEN`).
 
-## About Laravel
+Requirements
+------------
+- PHP 8.2+, Composer
+- Node.js 20+ with npm
+- Database (default SQLite) and writable `storage` directory
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Setup
+-----
+1) Install dependencies  
+`composer install`  
+`npm install`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+2) Environment  
+`cp .env.example .env`  
+Set `APP_KEY` (`php artisan key:generate`) and `APP_TOKEN` (used by fingerprint/API clients). Configure database; for SQLite create `database/database.sqlite`. Run `php artisan storage:link` for profile photos.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+3) Database  
+`php artisan migrate --seed` (seeds admin/homeroom users, classes, schedules, students, sample attendance).
 
-## Learning Laravel
+4) Run  
+- Dev: `npm run dev` and `php artisan serve` (or `composer dev` to run serve + queue + vite).  
+- Prod build: `npm run build`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Access
+------
+- Filament admin: `/admin` (seeded admin `admin@gmail.com` / `12345678`).
+- Homeroom users are seeded; they see only their classes.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+API quick reference
+-------------------
+- Auth: `POST /api/app/login` (nis, password) → Sanctum token; `POST /api/app/logout` (auth required).
+- App data (Bearer Sanctum): `GET /api/app/home`, `/api/app/account`, `/api/app/recently`, `/api/app/subject`.
+- Fingerprint/device (Bearer `APP_TOKEN`): `GET /api/students`, `PUT /api/students/{id}` to update fingerprint templates.
+- Attendance device endpoints: `GET /api/students/attendances` (today), `GET /api/students/fingerprint` (all templates), `POST /api/students/fingerprint` (`student_id`, `scanned_at` ISO datetime) to check-in/out.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Console tasks
+-------------
+- `php artisan attendance:auto-check-in` mark absent (skips weekends, respects special days).
+- `php artisan attendance:export` export previous month (basic and advanced) to `storage/app/attendances` and record in `attendance_reports`.
+- `php artisan attendance:export-master` export previous year summary.
 
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Notes
+-----
+- Profile photos are stored on the `public` disk; deleting/updating students cleans old files.
+- Classes named `Graduate` are hidden from most class filters/charts.
+- Update `APP_URL` in `.env` so generated links and storage URLs resolve correctly.

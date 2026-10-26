@@ -14,11 +14,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Group;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Facades\Auth;
 use Rawilk\FilamentPasswordInput\Password;
 
 class StudentResource extends Resource
@@ -55,9 +55,14 @@ class StudentResource extends Resource
 
                 Select::make('generation_class_id')
                     ->label('Nama Angkatan')
-                    ->options(GenerationClass::all()->pluck('generation_name', 'id')->toArray())
-                    ->relationship('generationClass', 'generation_name')
+                    ->options(fn() => static::getClassOptions('generation_name'))
+                    ->relationship(
+                        'generationClass',
+                        'generation_name',
+                        fn(Builder $query) => static::scopeClassesForUser($query)
+                    )
                     ->required()
+                    ->disabled(fn() => Auth::check() && Auth::user()->role === 'homeroom_teacher')
                     ->columnSpanFull(),
 
 
@@ -97,10 +102,19 @@ class StudentResource extends Resource
 
     public static function afterCreate(Student $record, array $data): Student
     {
+        if ($record->user_id) {
+            return $record;
+        }
+
+        if (! isset($data['user'])) {
+            return $record;
+        }
+
         $user = User::create([
             'name' => $data['user']['name'],
             'email' => $data['user']['email'],
-            'password' => Hash::make($data['user']['password']),
+            'password' => $data['user']['password'],
+            'role' => 'student',
         ]);
 
         $record->user()->associate($user);
@@ -111,25 +125,34 @@ class StudentResource extends Resource
 
     public static function afterUpdate(Student $record, array $data): Student
     {
+        $user = $record->user;
+
+        if (! $user) {
+            return $record;
+        }
+
         if (isset($data['user']['password']) && $data['user']['password']) {
-            $record->user->password = Hash::make($data['user']['password']);
+            $user->password = $data['user']['password'];
         }
 
         if (isset($data['user']['name'])) {
-            $record->user->name = $data['user']['name'];
+            $user->name = $data['user']['name'];
         }
 
         if (isset($data['user']['email'])) {
-            $record->user->email = $data['user']['email'];
+            $user->email = $data['user']['email'];
         }
 
-        $record->user->save();
+        $user->role = 'student';
+        $user->save();
 
         return $record;
     }
 
     public static function table(Table $table): Table
     {
+        $isAdmin = Auth::check() && Auth::user()->role === 'admin';
+
         return $table
             ->columns([
                 ImageColumn::make('profile_photo')
@@ -154,21 +177,28 @@ class StudentResource extends Resource
             ->filters([
                 SelectFilter::make('generation_class_id')
                     ->label('Nama Kelas')
-                    ->options(
-                        GenerationClass::all()
-                            ->pluck('class_name', 'id')
-                            ->toArray()
+                    ->relationship(
+                        'generationClass',
+                        'class_name',
+                        fn(Builder $query) => static::scopeClassesForUser($query)
                     )
+                    ->options(fn() => static::getClassOptions('class_name'))
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                ...array_filter([
+                    $isAdmin ? Tables\Actions\EditAction::make() : null,
+                    $isAdmin ? Tables\Actions\DeleteAction::make() : null,
                 ]),
-            ]);
+            ])
+            ->bulkActions(
+                $isAdmin
+                    ? [
+                        Tables\Actions\BulkActionGroup::make([
+                            Tables\Actions\DeleteBulkAction::make(),
+                        ]),
+                    ]
+                    : []
+            );
     }
 
     public static function getRelations(): array
@@ -178,7 +208,21 @@ class StudentResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('user');
+        $query = parent::getEloquentQuery()->with('user');
+
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $classIds = GenerationClass::query()
+                ->where('homeroom_teacher_id', Auth::id())
+                ->pluck('id');
+
+            if ($classIds->isEmpty()) {
+                $query->whereRaw('0 = 1');
+            } else {
+                $query->whereIn('generation_class_id', $classIds);
+            }
+        }
+
+        return $query;
     }
 
     public static function getPages(): array
@@ -188,5 +232,56 @@ class StudentResource extends Resource
             'create' => Pages\CreateStudent::route('/create'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if (app()->runningInConsole()) {
+            return true;
+        }
+
+        $user = Auth::user();
+
+        if (! $user) {
+            return false;
+        }
+
+        return in_array($user->role, ['admin', 'homeroom_teacher']);
+    }
+
+    protected static function scopeClassesForUser(Builder $query): Builder
+    {
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $query->where('homeroom_teacher_id', Auth::id());
+        }
+
+        return $query;
+    }
+
+    protected static function getClassOptions(string $column): array
+    {
+        return static::scopeClassesForUser(GenerationClass::query())
+            ->pluck($column, 'id')
+            ->toArray();
     }
 }

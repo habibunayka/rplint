@@ -4,13 +4,16 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SpecialDayResource\Pages;
 use App\Filament\Resources\SpecialDayResource\RelationManagers;
+use App\Models\GenerationClass;
 use App\Models\SpecialDay;
+use App\Models\Student;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SpecialDayResource extends Resource
@@ -54,12 +57,8 @@ class SpecialDayResource extends Resource
 
                 Forms\Components\Select::make('student_type')
                     ->label('Tipe Siswa')
-                    ->options([
-                        'all' => 'Semua Siswa',
-                        'selected' => 'Siswa Tertentu',
-                        'class' => 'Kelas Tertentu'
-                    ])
-                    ->default('all')
+                    ->options(fn() => static::getStudentTypeOptions())
+                    ->default(fn() => static::getDefaultStudentType())
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
                         if ($state === 'all') {
@@ -71,15 +70,15 @@ class SpecialDayResource extends Resource
                 Forms\Components\Select::make('students')
                     ->label('Pilih Siswa')
                     ->multiple()
-                    ->relationship('students', 'user.name')
+                    ->relationship(
+                        'students',
+                        'user.name',
+                        fn(Builder $query) => static::scopeStudentsForUser($query)
+                    )
                     ->visible(fn(callable $get) => $get('student_type') === 'selected')
                     ->searchable()
                     ->preload()
-                    ->options(function () {
-                        return \App\Models\Student::with('user')
-                            ->get()
-                            ->mapWithKeys(fn($student) => [$student->id => $student->user->name ?? 'Tanpa Nama']);
-                    })
+                    ->getOptionLabelFromRecordUsing(fn(Student $record) => $record->user->name ?? 'Tanpa Nama')
 
                     ->loadStateFromRelationshipsUsing(function ($component, $state) {
                         $component->state(
@@ -90,13 +89,14 @@ class SpecialDayResource extends Resource
                 Forms\Components\Select::make('classes')
                     ->label('Pilih Kelas')
                     ->multiple()
-                    ->relationship('classes', 'class_name')
+                    ->relationship(
+                        'classes',
+                        'class_name',
+                        fn(Builder $query) => static::getAccessibleClassesQuery($query)
+                    )
                     ->visible(fn(callable $get) => $get('student_type') === 'class')
                     ->searchable()
                     ->preload()
-                    ->options(function (callable $get) {
-                        return \App\Models\GenerationClass::pluck('class_name', 'id');
-                    })
                     ->loadStateFromRelationshipsUsing(function ($component, $state) {
                         $component->state(
                             $component->getRecord()->classes->pluck('id')->toArray()
@@ -145,8 +145,10 @@ class SpecialDayResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ...array_filter([
+                    Auth::check() && Auth::user()->role === 'admin' ? Tables\Actions\EditAction::make() : null,
+                    Auth::check() && Auth::user()->role === 'admin' ? Tables\Actions\DeleteAction::make() : null,
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -155,10 +157,126 @@ class SpecialDayResource extends Resource
             ]);
     }
 
+    protected static function getStudentTypeOptions(): array
+    {
+        if (! Auth::check()) {
+            return [
+                'all' => 'Semua Siswa',
+                'selected' => 'Siswa Tertentu',
+                'class' => 'Kelas Tertentu',
+            ];
+        }
+
+        if (Auth::user()->role === 'homeroom_teacher') {
+            return [
+                'selected' => 'Siswa Tertentu',
+                'class' => 'Kelas Tertentu',
+            ];
+        }
+
+        return [
+            'all' => 'Semua Siswa',
+            'selected' => 'Siswa Tertentu',
+            'class' => 'Kelas Tertentu',
+        ];
+    }
+
+    protected static function getDefaultStudentType(): string
+    {
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            return 'selected';
+        }
+
+        return 'all';
+    }
+
+    protected static function scopeStudentsForUser(Builder $query): Builder
+    {
+        $query->with('user');
+
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $classIds = static::getAccessibleClassesQuery()->pluck('id');
+
+            if ($classIds->isEmpty()) {
+                return $query->whereRaw('0 = 1');
+            }
+
+            $query->whereIn('generation_class_id', $classIds);
+        }
+
+        return $query;
+    }
+
+    protected static function getAccessibleClassesQuery(?Builder $query = null): Builder
+    {
+        $query ??= GenerationClass::query();
+
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $query->where('homeroom_teacher_id', Auth::id());
+        }
+
+        return $query;
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ManageSpecialDays::route('/'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (Auth::check() && Auth::user()->role === 'homeroom_teacher') {
+            $classIds = GenerationClass::query()
+                ->where('homeroom_teacher_id', Auth::id())
+                ->pluck('id');
+
+            $query->where(function (Builder $inner) use ($classIds) {
+                $inner->where('student_type', 'all')
+                    ->orWhereHas('classes', fn(Builder $q) => $q->whereIn('generation_classes.id', $classIds))
+                    ->orWhereHas('students', function (Builder $q) use ($classIds) {
+                        $q->whereIn('generation_class_id', $classIds);
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Auth::user()->role === 'admin';
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && in_array(Auth::user()->role, ['admin', 'homeroom_teacher']);
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if (app()->runningInConsole()) {
+            return true;
+        }
+
+        return Auth::user() && in_array(Auth::user()->role, ['admin', 'homeroom_teacher']);
     }
 }

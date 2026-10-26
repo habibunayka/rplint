@@ -7,7 +7,6 @@ use App\Http\Controllers\Api\StudentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
 Route::post('app/login',[AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function() {
@@ -18,10 +17,11 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('app/logout', [AuthController::class, 'logout']);
 });
 
-Route::get('/students', [StudentController::class, 'index']);
-Route::put('/students/{id}', [StudentController::class, 'update']);
-
-Route::get('/students/attendances', [AttendanceController::class, 'index']);
-Route::get('/students/fingerprint', [AttendanceController::class, 'getFingerprints']);
-Route::post('/students/fingerprint', [AttendanceController::class, 'store']);
+Route::middleware('custom.bearer')->group(function () {
+    Route::put('/students/{id}', [StudentController::class, 'update']);
+    Route::get('/students', [StudentController::class, 'index']);
+    Route::get('/students/attendances', [AttendanceController::class, 'index']);
+    Route::get('/students/fingerprint', [AttendanceController::class, 'getFingerprints']);
+    Route::post('/students/fingerprint', [AttendanceController::class, 'store']);
+});
 

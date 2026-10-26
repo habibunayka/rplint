@@ -6,13 +6,24 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Models\Attendance;
 use App\Models\Student;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class AttendanceClassSheet implements FromArray, WithHeadings, WithTitle, WithStyles
+class AttendanceClassSheet implements
+    FromArray,
+    WithHeadings,
+    WithTitle,
+    WithStyles,
+    WithColumnFormatting,
+    WithCustomStartCell
 {
     protected $class;
     protected $month;
@@ -23,16 +34,38 @@ class AttendanceClassSheet implements FromArray, WithHeadings, WithTitle, WithSt
         $this->month = $month;
     }
 
+    public function startCell(): string
+    {
+        return 'A1';
+    }
+
     public function headings(): array
     {
-        $headings = ['No', 'Nama Lengkap', 'NIS', 'NISN'];
         $daysInMonth = Carbon::parse($this->month)->daysInMonth;
 
+
+        $row1 = ['No', 'Nama Lengkap', 'NIS', 'NISN'];
+
         for ($i = 1; $i <= $daysInMonth; $i++) {
-            $headings[] = "{$i}";
+            $row1[] = $i;
         }
 
-        return $headings;
+
+        $row1[] = 'Total';
+        $row1[] = '';
+        $row1[] = '';
+
+
+        $row2 = ['', '', '', ''];
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $row2[] = '';
+        }
+
+        $row2[] = 'Hadir';
+        $row2[] = 'Izin';
+        $row2[] = 'Sakit';
+
+        return [$row1, $row2];
     }
 
     public function array(): array
@@ -48,9 +81,7 @@ class AttendanceClassSheet implements FromArray, WithHeadings, WithTitle, WithSt
             ->whereMonth('check_in_time', $month->month)
             ->whereYear('check_in_time', $month->year)
             ->get()
-            ->groupBy(function ($attendance) {
-                return $attendance->student_id . '-' . Carbon::parse($attendance->check_in_time)->toDateString();
-            });
+            ->groupBy(fn($a) => $a->student_id . '-' . Carbon::parse($a->check_in_time)->toDateString());
 
         $data = [];
 
@@ -62,21 +93,44 @@ class AttendanceClassSheet implements FromArray, WithHeadings, WithTitle, WithSt
                 "'" . $student->nisn,
             ];
 
+            $hadirCount = 0;
+            $sakitCount = 0;
+            $izinCount = 0;
+
             for ($day = 1; $day <= $daysInMonth; $day++) {
                 $date = $month->copy()->day($day)->toDateString();
                 $key = $student->id . '-' . $date;
 
                 $attendance = $attendances->get($key);
+                $dailyStatus = $attendance ? $attendance->first()->status : null;
 
-                $row[] = $attendance ? match ($attendance->first()->status) {
-                    'ontime' => 'H',
-                    'late' => 'H',
-                    'sick' => 'S',
-                    'permit' => 'I',
-                    'absent' => 'A',
-                    default => 'Libur',
-                } : 'Libur';
+                switch ($dailyStatus) {
+                    case 'ontime':
+                    case 'late':
+                        $row[] = 'H';
+                        $hadirCount++;
+                        break;
+                    case 'sick':
+                        $row[] = 'S';
+                        $sakitCount++;
+                        break;
+                    case 'permit':
+                        $row[] = 'I';
+                        $izinCount++;
+                        break;
+                    case 'absent':
+                        $row[] = 'A';
+                        break;
+                    default:
+                        $row[] = 'Libur';
+                        break;
+                }
             }
+
+
+            $row[] = $hadirCount;
+            $row[] = $izinCount;
+            $row[] = $sakitCount;
 
             $data[] = $row;
         }
@@ -89,21 +143,60 @@ class AttendanceClassSheet implements FromArray, WithHeadings, WithTitle, WithSt
         return $this->class->class_name;
     }
 
-    public function styles($sheet)
+    public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:AI1')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('A1:AI1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFCC00');
+        $daysInMonth = Carbon::parse($this->month)->daysInMonth;
 
-        $sheet->getStyle('A1:AI41')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $totalStartCol = $daysInMonth + 5;
+        $totalEndCol   = $daysInMonth + 7;
 
-        $sheet->getStyle('C1:AI41')->getAlignment()->setHorizontal('center')->setVertical('center');
+        $startCol = 'A';
+        $endCol = Coordinate::stringFromColumnIndex($totalEndCol);
 
-        $sheet->getColumnDimension('B')->setWidth(25);
-        $sheet->getColumnDimension('C')->setWidth(15);
-        $sheet->getColumnDimension('D')->setWidth(15);
 
-        for ($col = 'E'; $col <= 'AI'; $col++) {
-            $sheet->getColumnDimension($col)->setWidth(2);
+        $sheet->getStyle("A1:{$endCol}2")->getFont()->setBold(true);
+        $sheet->getStyle("A1:{$endCol}2")->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('FFCC00');
+
+
+        foreach (['A', 'B', 'C', 'D'] as $col) {
+            $sheet->mergeCells("{$col}1:{$col}2");
         }
+
+
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $col = Coordinate::stringFromColumnIndex($i + 4);
+            $sheet->mergeCells("{$col}1:{$col}2");
+        }
+
+
+        $sheet->mergeCells(
+            Coordinate::stringFromColumnIndex($totalStartCol)
+                . "1:" .
+                Coordinate::stringFromColumnIndex($totalEndCol)
+                . "1"
+        );
+
+        $sheet->getStyle("A1:{$endCol}2")
+            ->getAlignment()
+            ->setHorizontal('center')
+            ->setVertical('center');
+
+
+        $sheet->getStyle("A1:{$endCol}500")
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        return [];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'C' => NumberFormat::FORMAT_TEXT,
+            'D' => NumberFormat::FORMAT_TEXT,
+        ];
     }
 }

@@ -11,5 +11,5 @@ class SpecialDayClass extends Model
 
     protected $table = 'special_day_classes';
 
-    protected $fillable = ['class_id', 'special_day_id'];
+    protected $fillable = ['generation_class_id', 'special_day_id'];
 }

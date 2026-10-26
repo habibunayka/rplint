@@ -5,7 +5,6 @@ namespace App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\Facades\Hash;
 
 class EditStudent extends EditRecord
 {
@@ -20,11 +19,12 @@ class EditStudent extends EditRecord
         $user->update([
             'name' => $userData['name'],
             'email' => $userData['email'],
+            'role' => 'student',
         ]);
 
         if (!empty($userData['password'])) {
             $user->update([
-                'password' => Hash::make($userData['password']),
+                'password' => $userData['password'],
             ]);
         }
 
@@ -41,8 +41,22 @@ class EditStudent extends EditRecord
 
     protected function getHeaderActions(): array
     {
+        if (! auth()->check() || auth()->user()->role !== 'admin') {
+            return [];
+        }
+
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function authorizeAccess(): void
+    {
+        parent::authorizeAccess();
+
+        abort_unless(
+            auth()->check() && auth()->user()->role === 'admin',
+            403
+        );
     }
 }

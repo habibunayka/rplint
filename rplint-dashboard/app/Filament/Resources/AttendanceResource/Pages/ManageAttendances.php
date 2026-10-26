@@ -13,6 +13,12 @@ class ManageAttendances extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\CreateAction::make()
+                ->label('Tambah Kehadiran')
+                ->modalHeading('Tambah Kehadiran')
+                ->authorize(fn() => \App\Filament\Resources\AttendanceResource::canCreate())
+                ->visible(fn() => \App\Filament\Resources\AttendanceResource::canCreate())
+                ->createAnother(false),
         ];
     }
 }

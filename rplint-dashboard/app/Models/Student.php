@@ -14,15 +14,14 @@ class Student extends Model
     protected $fillable = [
         'generation_class_id',
         'absence',
-        'present',
-        'permit',
-        'absent',
         'nis',
         'nisn',
         'profile_photo',
         'address',
         'phone_number',
-        'fingerprint_template',
+        'fingerprint_template1',
+        'fingerprint_template2',
+        'fingerprint_template3',
         'user_id',
     ];
 

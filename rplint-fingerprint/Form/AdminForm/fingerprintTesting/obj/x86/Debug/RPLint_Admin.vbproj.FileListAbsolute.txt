@@ -75,8 +75,6 @@ E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\b
 E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\System.Threading.Tasks.Extensions.dll
 E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\ZstdSharp.dll
 E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\BouncyCastle.Cryptography.xml
-E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\fingerPrintControl.pdb
-E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\fingerPrintControl.xml
 E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\Google.Protobuf.pdb
 E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\Google.Protobuf.xml
 E:\Project-Penting\RPLint\rplint-fingerprint\Form\AdminForm\fingerprintTesting\bin\Debug\K4os.Compression.LZ4.xml

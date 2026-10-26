@@ -9,7 +9,7 @@ class StudentController
 {
     public function index(Request $request)
     {
-        if ($request->bearerToken() !== config('app.app_token')) {
+        if ($request->bearerToken() !== config('custom.api_token')) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -37,7 +37,7 @@ class StudentController
 
     public function update(Request $request, $id)
     {
-        if ($request->bearerToken() !== config('app.app_token')) {
+        if ($request->bearerToken() !== config('custom.api_token')) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 

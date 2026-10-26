@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -18,6 +19,10 @@ class ListStudents extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        if (! Auth::check() || Auth::user()->role !== 'admin') {
+            return [];
+        }
+
         return [
             Actions\CreateAction::make(),
             Action::make('downloadTemplate')

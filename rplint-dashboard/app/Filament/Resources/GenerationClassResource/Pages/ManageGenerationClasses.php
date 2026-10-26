@@ -5,6 +5,7 @@ namespace App\Filament\Resources\GenerationClassResource\Pages;
 use App\Filament\Resources\GenerationClassResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ManageGenerationClasses extends ManageRecords
 {
@@ -12,6 +13,10 @@ class ManageGenerationClasses extends ManageRecords
 
     protected function getHeaderActions(): array
     {
+        if (! Auth::check() || Auth::user()->role !== 'admin') {
+            return [];
+        }
+
         return [
             Actions\CreateAction::make(),
         ];

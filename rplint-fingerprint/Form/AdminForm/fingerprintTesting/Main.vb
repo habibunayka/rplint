@@ -31,7 +31,7 @@ Public Class Main
                 classSelected = ""
             End If
 
-            Dim url As String = $"http://localhost:8000/api/students?class={Uri.EscapeDataString(classSelected)}"
+            Dim url As String = $"https://rplint.cibionerpl.id/api/students?class={Uri.EscapeDataString(classSelected)}"
             Dim request As HttpWebRequest = WebRequest.Create(url)
             request.Method = "GET"
             AddAuthorizationHeader(request)
@@ -68,7 +68,7 @@ Public Class Main
                 Throw New Exception("No fingerprint template selected!")
             End If
 
-            Dim url As String = $"http://localhost:8000/api/students/{selectedId}"
+            Dim url As String = $"https://rplint.cibionerpl.id/api/students/{selectedId}"
             Dim data = New With {
                 Key .column = fingerprintColumn,
                 Key .value = fpXml

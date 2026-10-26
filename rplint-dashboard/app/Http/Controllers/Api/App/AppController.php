@@ -16,6 +16,14 @@ class AppController
     {
         $user = Auth::user();
         $student = Student::where('user_id', $user->id)->first();
+
+        if (! $student) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Student data not found for this user',
+            ], 404);
+        }
+
         $todayDate = Carbon::today();
 
         $attendanceToday = Attendance::where('student_id', $student->id)
@@ -56,6 +64,7 @@ class AppController
 
         $scheduleTheoryRaw = Schedule::where('day', $today)
             ->where('type', 'theory')
+            ->where('generation_class_id', $student->generation_class_id)
             ->where(function ($query) use ($now) {
                 $query->where(function ($q) use ($now) {
                     $q->where('start_time', '<=', $now->format('H:i:s'))
@@ -77,6 +86,7 @@ class AppController
 
         $scheduleProductiveRaw = Schedule::where('day', $today)
             ->where('type', 'productive')
+            ->where('generation_class_id', $student->generation_class_id)
             ->where(function ($query) use ($now) {
                 $query->where(function ($q) use ($now) {
                     $q->where('start_time', '<=', $now->format('H:i:s'))
@@ -119,6 +129,13 @@ class AppController
 
         $userData = Student::where('user_id', $user->id)->first();
 
+        if (! $userData) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Student data not found for this user',
+            ], 404);
+        }
+
         return response()->json([
             'data' => [
                 'id' => $user->id,
@@ -138,6 +155,13 @@ class AppController
     {
         $user = Auth::user();
         $student = Student::where('user_id', $user->id)->first();
+
+        if (! $student) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Student data not found for this user',
+            ], 404);
+        }
 
         $thirtyDaysAgo = now()->subDays(30)->startOfDay();
 

@@ -17,16 +17,18 @@ class AuthController
             'password' => 'required',
         ]);
 
-        $user = User::whereHas('student', fn($q) => $q->where('nis', $request->nis))->first();
+        $student = Student::with(['user', 'generationClass'])
+            ->where('nis', $request->nis)
+            ->first();
 
-        if (!$user || !$user->student || !Hash::check($request->password, $user->password)) {
+        if (! $student || ! $student->user || ! Hash::check($request->password, $student->user->password)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'Nis atau Password anda salah!',
             ], 400);
         }
 
-        $student = $user->student;
+        $user = $student->user;
 
         $token = $user->createToken('RPLintApp')->plainTextToken;
 
